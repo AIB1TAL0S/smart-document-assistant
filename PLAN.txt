@@ -1,0 +1,11 @@
+Smart Document Assistant — approved local approach
+
+Scope: local-only Python web application accepting text-based PDF, DOCX and TXT documents. SQLite persists extracted chunks and Ollama embeddings. Questions retrieve relevant chunks by cosine similarity and ask local Ollama for grounded answers with numbered source citations. No cloud APIs, accounts or deployment. Bind to loopback. Scanned PDFs require OCR outside this app. Repository private under AIB1TAL0S.
+
+Plan:
+1. Build extraction, overlapping chunks, local Ollama HTTP client, SQLite index, retrieval, answer generation and delete support in engine.py.
+2. Build FastAPI upload/list/delete/question routes in app.py and single-page static UI in static/index.html. UI shows upload progress, indexed documents, answer citations and readable source excerpts.
+3. Add pyproject.toml, usage instructions and boundary tests for persistence, extraction and retrieval. Install dependencies; pull nomic-embed-text and llama3.2:1b.
+4. Run local server; upload real fixtures, query real models, inspect UI, delete documents and verify persistence. Exclude uploads, index, virtualenv and secrets from git. Commit and push private repository.
+
+Contracts: Engine(data_dir: Path), documents() -> list[dict{id,name,chunks}], ingest(name:str, content:bytes) -> dict{id,name,chunks}, delete(document_id:str) -> bool, ask(question:str) -> dict{answer:str,sources:list[dict{id:int,document:str,page:int,text:str,score:float}]}. ValueError is user input error; RuntimeError is model or index readiness failure. Model defaults nomic-embed-text and llama3.2:1b; configurable via EMBED_MODEL and CHAT_MODEL. Ollama URL fixed to http://127.0.0.1:11434 for local-only operation. Database access per operation; use persisted embedding-model metadata and reject changed model for existing index. FastAPI routes: GET /api/documents -> {documents:[...]}; POST /api/documents multipart file -> document; DELETE /api/documents/{id} -> {deleted:true}; POST /api/ask {question} -> answer and sources. Upload max 20 MiB. Static page served at /.

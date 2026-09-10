@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Document Assistant</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#152c32;background:#f7f8f5;font-synthesis:none}*{box-sizing:border-box}body{margin:0}button,input,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:9px;padding:11px 17px;background:#147566;color:white;font-weight:650}button:hover{filter:brightness(.93)}button:disabled{opacity:.5;cursor:wait}button:focus-visible,a:focus-visible{outline:3px solid #edab44;outline-offset:3px}.layout{display:grid;grid-template-columns:310px 1fr;min-height:100vh}aside{background:#142e34;color:#eaf3ef;padding:32px 24px;display:flex;flex-direction:column;gap:24px}.brand{font-size:21px;font-weight:700;letter-spacing:-.6px}.brand small{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#a5c2ba;margin-top:8px}.badge{font-size:12px;color:#b7e5d5;border:1px solid #426057;border-radius:30px;padding:7px 11px;width:fit-content}.upload{border:1px dashed #628079;border-radius:12px;padding:20px 16px}.upload p{font-size:12px;line-height:1.6;color:#b9cec8}input[type=file]{width:100%;font-size:12px;margin:12px 0 17px}input::file-selector-button{border:0;border-radius:5px;padding:7px;background:#d9e9e1;color:#17372f;margin-right:8px}.upload button{width:100%;background:#b8e9d6;color:#173a32}.library-title{font-size:12px;letter-spacing:1.8px;text-transform:uppercase;color:#a9c2ba}.doc{padding:15px 0;border-bottom:1px solid #355057;display:flex;align-items:center;gap:8px}.doc-info{flex:1;min-width:0}.doc strong{display:block;font-size:13px;overflow-wrap:anywhere}.doc small{display:block;color:#a9c2ba;margin-top:4px}.remove{font-size:11px;padding:7px;background:transparent;color:#c6d9d2;border:1px solid #476259}.note{font-size:12px;line-height:1.7;color:#adc4bc;margin-top:auto}.workspace{max-width:1020px;width:100%;padding:52px 56px;margin:auto}.eyebrow{font-size:11px;color:#52746b;letter-spacing:2px;font-weight:700}h1{font-size:clamp(30px,4vw,45px);line-height:1.12;letter-spacing:-1.8px;margin:16px 0}h1 span{color:#147566}.intro{color:#657871;font-size:15px;line-height:1.7;max-width:580px;margin-bottom:35px}.question-box{background:white;border:1px solid #d9e2db;border-radius:15px;padding:22px;box-shadow:0 8px 30px #173a3210}label{font-size:13px;font-weight:650}textarea{display:block;width:100%;resize:vertical;border:0;outline:0;min-height:95px;margin-top:15px;color:#183b35;background:transparent;line-height:1.6}textarea:focus-visible{outline:2px solid #147566;outline-offset:5px;border-radius:4px}.form-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid #edf1ec;padding-top:15px}.hint{font-size:11px;color:#7b8e85}#status{min-height:25px;font-size:13px;margin:18px 0;color:#286653}#status.error{color:#a33535}.answer-card{background:white;border:1px solid #dbe3dc;border-radius:14px;padding:26px;margin:15px 0 26px}h2{font-size:17px;margin:0 0 16px}.answer-text{font-size:15px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}.answer-text a{color:#147566;font-weight:700}.source{border:1px solid #dbe3dc;border-radius:10px;padding:18px;margin-top:12px;background:#fff;scroll-margin:20px}.source:target{border-color:#147566;box-shadow:0 0 0 2px #14756625}.source h3{font-size:13px;margin:0 0 10px;overflow-wrap:anywhere}.source p{font-size:13px;line-height:1.7;color:#52665f;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}.empty{padding:42px 20px;text-align:center;color:#84938a}.empty strong{display:block;color:#53685e;font-size:16px;margin-bottom:10px}.empty p{font-size:13px;line-height:1.7}.footer{margin-top:30px;font-size:11px;color:#7b8e85;line-height:1.7}[hidden]{display:none!important}@media(max-width:800px){.layout{grid-template-columns:1fr}aside{padding:24px}.workspace{padding:32px 24px}.note{margin-top:0}.brand small{display:inline;margin-left:12px}.form-footer{align-items:flex-end}.hint{max-width:170px}}
+</style>
+</head>
+<body><div class="layout">
+<aside><div class="brand">Smart Document<small>Assistant</small></div><div class="badge">Local models · Private workspace</div>
+<form id="upload-form" class="upload"><label for="file">Add your documents</label><p>Build a searchable library. Your documents never need a cloud API.</p><input id="file" type="file" accept=".pdf,.docx,.txt" required><button id="upload-button">Index document</button><p>PDF, DOCX or TXT · Up to 20 MiB</p></form>
+<section aria-labelledby="library-heading"><h2 id="library-heading" class="library-title">Your library <span id="count">0</span></h2><div id="documents"></div></section>
+<p class="note">Powered by Ollama on this machine.<br>Scanned PDFs need OCR first. Delete a document to remove its indexed text.</p></aside>
+<main class="workspace"><div class="eyebrow">YOUR KNOWLEDGE, WITH CONTEXT</div><h1>Less searching.<br><span>More understanding.</span></h1><p class="intro">Ask your documents a question. Get a focused answer with the passages behind it — all running locally.</p>
+<form id="ask-form" class="question-box"><label for="question">What would you like to know?</label><textarea id="question" maxlength="4000" placeholder="What are the key findings in these documents?" required></textarea><div class="form-footer"><span class="hint">Answers grounded in your indexed documents</span><button id="ask-button">Ask documents</button></div></form>
+<div id="status" role="status" aria-live="polite"></div>
+<div id="empty" class="empty"><strong>Your next answer starts here</strong><p>Add a document, then ask a question.<br>Supporting excerpts will appear alongside your answer.</p></div>
+<section id="result" hidden><div class="answer-card"><h2>Answer</h2><div id="answer" class="answer-text"></div></div><h2>Retrieved sources</h2><div id="sources"></div></section>
+<p class="footer">AI answers can be wrong. Check source excerpts before relying on them. PDF citations use page numbers; DOCX and TXT are shown as page 1. No OCR or image understanding.</p>
+</main></div>
+<script>
+const $ = id => document.getElementById(id);
+let busy = false;
+let docCount = 0;
+function state(message, error = false) { $('status').textContent = message; $('status').classList.toggle('error', error); }
+function setBusy(value) { busy = value; document.querySelectorAll('button,input,textarea').forEach(el => el.disabled = value); $('ask-button').disabled = value || docCount === 0; }
+async function api(path, options) {
+  const response = await fetch(path, options);
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'Request rejected. Check your input.');
+  return data;
+}
+async function refresh() {
+  const data = await api('/api/documents');
+  docCount = data.documents.length; $('count').textContent = docCount; $('documents').replaceChildren();
+  if (!docCount) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'No documents yet.'; $('documents').append(p); }
+  for (const doc of data.documents) {
+    const row = document.createElement('div'); row.className = 'doc';
+    const info = document.createElement('div'); info.className = 'doc-info';
+    const name = document.createElement('strong'); name.textContent = doc.name;
+    const chunks = document.createElement('small'); chunks.textContent = `${doc.chunks} indexed passages`;
+    info.append(name, chunks);
+    const remove = document.createElement('button'); remove.className = 'remove'; remove.type = 'button'; remove.textContent = 'Delete'; remove.setAttribute('aria-label', `Delete ${doc.name}`);
+    remove.onclick = async () => {
+      if (busy || !confirm(`Delete ${doc.name} and its indexed text?`)) return;
+      setBusy(true); state('Deleting document…');
+      try { await api(`/api/documents/${encodeURIComponent(doc.id)}`, {method:'DELETE'}); $('result').hidden = true; $('empty').hidden = false; await refresh(); state('Document deleted.'); }
+      catch (error) { state(error.message, true); } finally { setBusy(false); }
+    };
+    row.append(info, remove); $('documents').append(row);
+  }
+  setBusy(busy);
+}
+$('upload-form').onsubmit = async event => {
+  event.preventDefault(); if (busy) return;
+  const file = $('file').files[0]; if (!file) return;
+  if (file.size > 20 * 1024 * 1024) { state('Maximum document size is 20 MiB.', true); return; }
+  const body = new FormData(); body.append('file', file);
+  setBusy(true); state('Extracting text and creating local embeddings. Large files may take a few minutes…');
+  try { const doc = await api('/api/documents', {method:'POST', body}); $('file').value = ''; await refresh(); state(`${doc.name} is ready — ${doc.chunks} passages indexed.`); }
+  catch (error) { state(error.message, true); } finally { setBusy(false); }
+};
+$('ask-form').onsubmit = async event => {
+  event.preventDefault(); if (busy) return;
+  const question = $('question').value.trim(); if (!question) { state('Enter a question.', true); return; }
+  setBusy(true); state('Finding relevant passages and generating an answer locally…'); $('result').hidden = true;
+  try {
+    const data = await api('/api/ask', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({question})});
+    $('answer').replaceChildren(); $('sources').replaceChildren();
+    for (const part of data.answer.split(/(\[\d+\])/g)) {
+      const match = part.match(/^\[(\d+)\]$/); const known = match && data.sources.some(s => s.id === Number(match[1]));
+      if (known) { const link = document.createElement('a'); link.href = `#source-${match[1]}`; link.textContent = part; $('answer').append(link); }
+      else $('answer').append(document.createTextNode(part));
+    }
+    const sourceNav = document.createElement('p');
+    sourceNav.className = 'hint'; sourceNav.textContent = 'Retrieved passages: ';
+    for (const source of data.sources) {
+      const link = document.createElement('a'); link.href = `#source-${source.id}`;
+      link.textContent = `[${source.id}] `; sourceNav.append(link);
+    }
+    $('answer').append(sourceNav);
+    for (const source of data.sources) {
+      const card = document.createElement('article'); card.className = 'source'; card.id = `source-${source.id}`;
+      const title = document.createElement('h3'); title.textContent = `[${source.id}] ${source.document} · Page ${source.page}`;
+      const text = document.createElement('p'); text.textContent = source.text;
+      card.append(title, text); $('sources').append(card);
+    }
+    $('empty').hidden = true; $('result').hidden = false; state('Answer ready. Check the retrieved sources below.');
+  } catch (error) { state(error.message, true); } finally { setBusy(false); }
+};
+refresh().catch(error => state(error.message, true));
+</script></body></html>
